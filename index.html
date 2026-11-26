@@ -1,0 +1,912 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Office-Quote</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --surface-2:#f0f2f5; --border:#e2e5ea;
+  --text:#1b1f24; --muted:#5f6873; --accent:#2557d6; --accent-soft:#e3eafc;
+  --office:#2557d6; --home:#9aa4b2; --good:#1f8a4c; --good-soft:#e1f3e8;
+  --warn:#b25e00; --warn-soft:#fbeedd; --bad:#c0352b; --bad-soft:#fbe3e1;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --surface:#1b1e23; --surface-2:#23272e; --border:#2f343c;
+    --text:#e8eaed; --muted:#9aa3ad; --accent:#7ea2ff; --accent-soft:#1f2b4a;
+    --office:#7ea2ff; --home:#5b6470; --good:#5cc98a; --good-soft:#173324;
+    --warn:#f0a95a; --warn-soft:#3a2a15; --bad:#f07b72; --bad-soft:#3d1c1a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#121417; --surface:#1b1e23; --surface-2:#23272e; --border:#2f343c;
+    --text:#e8eaed; --muted:#9aa3ad; --accent:#7ea2ff; --accent-soft:#1f2b4a;
+    --office:#7ea2ff; --home:#5b6470; --good:#5cc98a; --good-soft:#173324;
+    --warn:#f0a95a; --warn-soft:#3a2a15; --bad:#f07b72; --bad-soft:#3d1c1a;
+    color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+main{max-width:1100px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+h1{font-size:24px;margin:0}
+h2{font-size:17px;margin:32px 0 10px}
+.sub{color:var(--muted);font-size:13px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.btn{font:inherit;font-size:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:7px 12px;border-radius:8px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:hover{filter:brightness(.97)}
+.settings{display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:14px}
+.settings label{display:flex;gap:6px;align-items:center}
+.settings input,.settings select{font:inherit;font-size:14px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);color:var(--text)}
+.settings input[type=number]{width:64px}
+#drop{border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;color:var(--muted);font-size:14px;margin-bottom:16px}
+#drop.over{border-color:var(--accent);background:var(--accent-soft)}
+#msg{font-size:13px;margin-bottom:12px;color:var(--muted)}
+#msg.err{color:var(--bad)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card .label{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.card .big{font-size:30px;font-weight:650;margin:4px 0 2px}
+.card .big small{font-size:16px;font-weight:500;color:var(--muted)}
+.bar{position:relative;height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden;margin:10px 0}
+.bar>span{position:absolute;left:0;top:0;bottom:0;background:var(--office);border-radius:5px}
+.bar>i{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--text);opacity:.55}
+.status{display:inline-block;font-size:13px;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:4px}
+.ok{background:var(--good-soft);color:var(--good)}
+.warn{background:var(--warn-soft);color:var(--warn)}
+.bad{background:var(--bad-soft);color:var(--bad)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:14px;margin-top:10px}
+.kv span:nth-child(odd){color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.03em;background:var(--surface-2)}
+th:first-child,td:first-child,td.l,th.l{text-align:left}
+tr:last-child td{border-bottom:none}
+tr.current td{background:var(--accent-soft)}
+tr.sum td{font-weight:650;border-top:2px solid var(--border);background:var(--surface-2)}
+td.pos{color:var(--good)} td.neg{color:var(--bad)}
+.mini{display:inline-block;width:80px;height:8px;border-radius:4px;background:var(--surface-2);position:relative;vertical-align:middle;overflow:hidden}
+.mini>span{position:absolute;left:0;top:0;bottom:0;background:var(--office)}
+.mini>i{position:absolute;top:0;bottom:0;width:2px;background:var(--text);opacity:.5}
+.chip{display:inline-block;font-size:12px;padding:1px 7px;border-radius:6px;margin:1px 2px}
+.chip.o{background:var(--accent-soft);color:var(--office)}
+.chip.h{background:var(--surface-2);color:var(--muted)}
+.chip.m{outline:1px dashed var(--warn)}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:600;padding:6px 0}
+.legend{font-size:12px;color:var(--muted);margin-top:8px}
+.empty{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;color:var(--muted)}
+.hidden{display:none}
+.primary-btn{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.sync{font-size:12px;color:var(--muted)}
+.kv .hd{grid-column:1/-1;border-top:1px solid var(--border);margin-top:8px;padding-top:8px;font-weight:600;color:var(--text)}
+.gh{font-weight:650;font-size:15px;margin:14px 0 6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;min-width:0}
+.kl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.kn{font-size:22px;font-weight:650;line-height:1.25}
+.kn.t-pos{color:var(--good)} .kn.t-neg{color:var(--bad)} .kn.t-warn{color:var(--warn)}
+.ks{font-size:12px;color:var(--muted);line-height:1.3}
+.chartbox{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.seg{display:flex;gap:4px}
+.seg button{padding:5px 12px;font-size:13px}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chart svg{display:block;width:100%;max-width:560px;height:auto}
+.c-g{stroke:var(--border);stroke-width:1}
+.c-t{fill:var(--muted);font-size:10px}
+.c-v{fill:var(--text);font-size:10px;font-weight:600}
+.c-o{fill:var(--office)} .c-h{fill:var(--home)} .c-part{fill-opacity:.55}
+.c-tl{stroke:var(--text);stroke-width:1.5;stroke-dasharray:3 2}
+.c-f{fill:none;stroke:var(--warn);stroke-width:1.5;stroke-dasharray:3 2}
+.lg{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:-1px}
+.lg:first-child{margin-left:0}
+.lg.o{background:var(--office)} .lg.h{background:var(--home)}
+.lg.t{height:0;border-top:2px dashed var(--text);border-radius:0;vertical-align:3px}
+.lg.f{background:none;border:1.5px dashed var(--warn)}
+details.foot{margin-top:24px}
+@media (max-width:520px){
+  main{padding-block:10px 28px}
+  header{margin-bottom:6px;gap:6px 12px}
+  h1{font-size:19px}
+  .toolbar button,.toolbar .btn{padding:5px 10px;font-size:13px}
+  .kpis{gap:6px}
+  .kpi{padding:7px 9px}
+  .kl{font-size:10px}
+  .kn{font-size:18px}
+  .ks{font-size:11px;line-height:1.25}
+  .gh{margin:10px 0 5px;font-size:14px}
+  .chartbox{margin-top:10px;padding:8px 10px}
+}
+</style>
+<main>
+<header>
+  <div>
+    <h1>Office-Quote</h1>
+    <div class="sub" id="dataInfo">Noch keine Zeitnachweise geladen.</div>
+  </div>
+  <div class="toolbar">
+    <button class="primary-btn" id="btnDrive">Aus Google Drive aktualisieren</button>
+    <label class="btn">PDFs hinzufügen<input type="file" id="fileInput" accept="application/pdf" multiple hidden></label>
+  </div>
+</header>
+
+<div id="msg"></div>
+
+<div id="content"></div>
+
+<details class="foot" data-k="foot"><summary>Einstellungen und Daten</summary>
+<div class="settings">
+  <label>Office-Anteil <input type="number" id="pct" min="0" max="100" step="5"> %</label>
+  <label>Bezugsgröße
+    <select id="basis">
+      <option value="soll">Sollzeit (35 h/Woche)</option>
+      <option value="ist">Tatsächlich gearbeitete Stunden</option>
+    </select>
+  </label>
+</div>
+
+<div id="drop">Die Zeitnachweise werden beim Öffnen automatisch aus deinem Google-Drive-Ordner geholt. Lege neue PDFs (z. B. 202612.pdf) in diesen Ordner. Alternativ PDFs hierher ziehen oder „PDFs hinzufügen“ wählen. Ein neueres PDF desselben Monats ersetzt das alte.</div>
+<button id="btnClear" title="Alle ausgewerteten Monate löschen">Zurücksetzen</button>
+</details>
+</main>
+
+<script>
+"use strict";
+const pdfOk = typeof window.pdfjsLib !== "undefined";
+// Läuft die Seite außerhalb von claude.ai (z. B. GitHub Pages), gibt es kein window.claude: dann ohne Drive/Sync, nur lokale PDFs.
+const hasClaude = typeof window.claude !== "undefined" && window.claude && typeof window.claude.use === "function";
+if (pdfOk) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/* ---------- Speicher ---------- */
+const LS_MONTHS = "officeQuote.months", LS_SETTINGS = "officeQuote.settings";
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+let months = lsGet(LS_MONTHS, {});           // { "2026-10": {meta, days:[...]} }
+let settings = Object.assign({ pct: 60, basis: "soll" }, lsGet(LS_SETTINGS, {}));
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open("officeQuote", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("kv");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function idbGet(key) { try { const db = await idb(); return await new Promise(r => { const q = db.transaction("kv").objectStore("kv").get(key); q.onsuccess = () => r(q.result); q.onerror = () => r(undefined); }); } catch { return undefined; } }
+async function idbSet(key, val) { try { const db = await idb(); await new Promise(r => { const t = db.transaction("kv", "readwrite"); t.objectStore("kv").put(val, key); t.oncomplete = r; t.onerror = r; }); } catch {} }
+async function idbDel(key) { try { const db = await idb(); await new Promise(r => { const t = db.transaction("kv", "readwrite"); t.objectStore("kv").delete(key); t.oncomplete = r; t.onerror = r; }); } catch {} }
+
+/* ---------- Datum ---------- */
+const D = s => { const [y, m, d] = s.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const iso = dt => dt.toISOString().slice(0, 10);
+const addDays = (dt, n) => new Date(dt.getTime() + n * 864e5);
+const dow = dt => (dt.getUTCDay() + 6) % 7; // 0 = Mo
+const mondayOf = dt => addDays(dt, -dow(dt));
+const deDate = s => { const [y, m, d] = s.split("-"); return `${d}.${m}.${y}`; };
+const deShort = s => { const [, m, d] = s.split("-"); return `${d}.${m}.`; };
+const WD = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+function isoWeek(dt) {
+  const t = addDays(dt, 3 - dow(dt));
+  const w1 = new Date(Date.UTC(t.getUTCFullYear(), 0, 4));
+  return 1 + Math.round(((t - w1) / 864e5 - 3 + dow(w1)) / 7);
+}
+function easter(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4,
+    f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+    i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+    mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(Date.UTC(y, mo - 1, da));
+}
+const holidayCache = {};
+function holidaysBW(y) { // gesetzliche Feiertage Baden-Württemberg
+  if (holidayCache[y]) return holidayCache[y];
+  const e = easter(y), s = new Map([[`${y}-01-01`, "Neujahr"], [`${y}-01-06`, "Heilige Drei Könige"], [`${y}-05-01`, "Tag der Arbeit"],
+    [`${y}-10-03`, "Tag der Deutschen Einheit"], [`${y}-11-01`, "Allerheiligen"], [`${y}-12-25`, "1. Weihnachtstag"], [`${y}-12-26`, "2. Weihnachtstag"]]);
+  [[-2, "Karfreitag"], [1, "Ostermontag"], [39, "Christi Himmelfahrt"], [50, "Pfingstmontag"], [60, "Fronleichnam"]].forEach(([n, t]) => s.set(iso(addDays(e, n)), t));
+  return (holidayCache[y] = s);
+}
+const PAUSE = 0.75;   // 45 min Pause pro Arbeitstag
+const fmtHM = n => { const t = Math.round(n * 60); return `${Math.floor(t / 60)} h ${String(t % 60).padStart(2, "0")} min`; };
+const isWorkday = dt => dow(dt) < 5 && !holidaysBW(dt.getUTCFullYear()).has(iso(dt));
+
+/* ---------- Zahlen ---------- */
+const fmt = (n, dec = 2) => (Math.round(n * 100) / 100).toLocaleString("de-DE", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const fmtH = n => fmt(n) + " h";
+const fmtSigned = n => (n > 0.004 ? "+" : n < -0.004 ? "−" : "±") + fmt(Math.abs(n)) + " h";
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const toMin = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+
+/* ---------- PDF-Parser ---------- */
+const RE_TIME = /^\d{1,2}:\d{2}$/, RE_DEC = /^-?\d+\.\d{2}$/, RE_FLAG = /^[A-Z]$/;
+
+async function parsePdf(buf, fileName) {
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const lines = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(i => i.str && i.str.trim())
+      .map(i => ({ s: i.str.trim(), x: i.transform[4], y: i.transform[5] }))
+      .sort((a, b) => b.y - a.y || a.x - b.x);
+    const pageLines = [];
+    for (const it of items) {
+      const ln = pageLines.find(l => Math.abs(l.y - it.y) < 2.5);
+      if (ln) ln.items.push(it); else pageLines.push({ y: it.y, items: [it] });
+    }
+    pageLines.sort((a, b) => b.y - a.y);
+    for (const l of pageLines) {
+      l.items.sort((a, b) => a.x - b.x);
+      l.text = l.items.map(i => i.s).join(" ").replace(/\s+/g, " ").trim();
+      lines.push(l);
+    }
+  }
+  const full = lines.map(l => l.text).join("\n");
+
+  const per = full.match(/vom\s+(\d{2})\.(\d{2})\.(\d{4})\s+bis\s+(\d{2})\.(\d{2})\.(\d{4})/);
+  if (!per) throw new Error(`${fileName}: kein Zeitnachweis-Zeitraum gefunden`);
+  const year = +per[3], month = +per[2];
+  const created = full.match(/erstellt am:?\s*(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}:\d{2}:\d{2})/);
+  const valid = full.match(/einschlie(?:ß|ss)lich\s+(\d{2})\.(\d{2})\.(\d{4})/);
+  const az = full.match(/AZPL\s+IRTAZ\s+IRWAZ\s+\S+\s+(\d+\.\d{2})\s+(\d+\.\d{2})/);
+  const ul = full.match(/\nUrlaub\s+(\d{2}\.\d{2}\.\d{4})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})/);
+
+  // Spaltenposition „Gehen“ aus dem Tabellenkopf (zur Zuordnung von Uhrzeiten / E-Kennzeichen)
+  let gehenX = null;
+  for (const l of lines) {
+    const g = l.items.find(i => i.s === "Gehen"), k = l.items.find(i => i.s === "Kommen");
+    if (g && k) { gehenX = g.x; break; }
+  }
+
+  function readTimes(items) {
+    // liefert Segmente [{k,kF,g,gF}]
+    const toks = [];
+    for (const it of items) it.s.split(/\s+/).forEach((t, idx) => toks.push({ t, x: it.x, joined: idx > 0 }));
+    const segs = []; let seg = null, last = null;
+    for (const tk of toks) {
+      if (RE_TIME.test(tk.t)) {
+        const isGehen = gehenX != null ? tk.x >= gehenX - 4 : (seg && seg.g == null && last === "k");
+        if (!isGehen) { seg = { k: tk.t, kF: "", g: null, gF: "" }; segs.push(seg); last = "k"; }
+        else { if (!seg || seg.g != null) { seg = { k: null, kF: "", g: null, gF: "" }; segs.push(seg); } seg.g = tk.t; last = "g"; }
+      } else if (RE_FLAG.test(tk.t) && seg) {
+        let col = last;
+        if (gehenX != null && !tk.joined) col = tk.x < gehenX - 4 ? "k" : "g";
+        if (col === "k") seg.kF = tk.t; else seg.gF = tk.t;
+      }
+    }
+    return segs;
+  }
+
+  const days = []; let prev = null;
+  for (const l of lines) {
+    const m = l.text.match(/^(\d{2})\s+(MO|DI|MI|DO|FR|SA|SO)\b/);
+    if (m) {
+      const toks = l.text.split(" ");
+      const tazpIdx = toks.findIndex((t, i) => i >= 2 && /^\d{4}$/.test(t));
+      if (tazpIdx < 0) { prev = null; continue; }
+      const note = toks.slice(2, tazpIdx).join(" ");
+      const tazpItemIdx = l.items.findIndex(i => i.s.split(/\s+/).includes(toks[tazpIdx]));
+      const after = tazpItemIdx >= 0 ? l.items.slice(tazpItemIdx + 1) : [];
+      const timeItems = after.filter(i => i.s.split(/\s+/).some(t => RE_TIME.test(t) || RE_FLAG.test(t)));
+      const decs = toks.slice(tazpIdx + 1).filter(t => RE_DEC.test(t)).map(Number);
+      const day = {
+        date: `${year}-${String(month).padStart(2, "0")}-${m[1]}`,
+        note, tazp: toks[tazpIdx],
+        segs: readTimes(timeItems),
+        arbeits: decs.length >= 2 ? decs[0] : 0,
+        soll: decs.length >= 2 ? decs[1] : 0,
+        pause: decs.length >= 3 ? decs[2] : 0,
+      };
+      days.push(day); prev = day;
+    } else if (prev && l.text.split(" ").every(t => RE_TIME.test(t) || RE_FLAG.test(t)) && l.text.split(" ").some(t => RE_TIME.test(t))) {
+      prev.segs.push(...readTimes(l.items));
+    } else {
+      prev = null;
+    }
+  }
+  if (!days.length) throw new Error(`${fileName}: keine Tageszeilen erkannt`);
+
+  const lastDay = `${per[6]}-${per[5]}-${per[4]}`;
+  return {
+    key: `${year}-${String(month).padStart(2, "0")}`,
+    meta: {
+      fileName,
+      from: `${per[3]}-${per[2]}-${per[1]}`, to: lastDay,
+      validUntil: valid ? `${valid[3]}-${valid[2]}-${valid[1]}` : null,
+      created: created ? `${created[3]}-${created[2]}-${created[1]}T${created[4]}` : null,
+      irtaz: az ? +az[1] : 7, irwaz: az ? +az[2] : 35,
+      urlaub: ul ? { bis: ul[1], anspruch: +ul[2], verbrauch: +ul[3], rest: +ul[4], verplant: +ul[5] } : null,
+    },
+    days,
+  };
+}
+
+/* ---------- Sync zwischen Geräten (db) ---------- */
+let monthsCol = null, syncState = "lokal", firstSync = false, lastDrive = 0;
+let syncResolve = () => {}; const syncReady = new Promise(r => { syncResolve = r; }); setTimeout(() => syncResolve(), 5000);
+const newer = (a, b) => !b || !b.meta.created || (a.meta.created && a.meta.created > b.meta.created);
+async function pushMonth(res) {
+  if (!monthsCol) return;
+  try { await monthsCol.doc(res.key).set({ payload: JSON.stringify(res), created: res.meta.created || "" }); }
+  catch (e) { syncState = "Sync-Fehler (" + (e.code || "?") + ")"; render(); }
+}
+async function initSync() {
+  let db = null;
+  try { db = await claude.use("db"); } catch {}
+  if (!db) { syncState = "nur auf diesem Gerät"; syncResolve(); render(); return; }
+  monthsCol = db.collection("months");
+  const timer = setTimeout(() => { syncState = "Sync nicht erreichbar"; render(); }, 10000);
+  monthsCol.onSnapshot(snap => {
+    if (snap.empty && snap.metadata.fromCache) return;
+    if (!snap.metadata.fromCache) { clearTimeout(timer); syncState = "auf allen Geräten synchronisiert"; syncResolve(); }
+    const remote = {};
+    snap.docs.forEach(d => { try { const v = d.data(); if (v && v.payload) remote[d.id] = JSON.parse(v.payload); } catch {} });
+    if (!snap.metadata.fromCache && !firstSync) {            // erster verbindlicher Stand: lokale Monate nachreichen
+      firstSync = true;
+      for (const k of Object.keys(months)) if (newer(months[k], remote[k])) { remote[k] = months[k]; pushMonth(months[k]); }
+    }
+    months = remote; lsSet(LS_MONTHS, months); render();
+  }, e => { syncState = "Sync beendet (" + (e.code || "?") + ")"; render(); });
+}
+
+function storeParsed(res) {
+  const old = months[res.key];
+  if (old && old.meta.created && res.meta.created && old.meta.created > res.meta.created) return false;
+  months[res.key] = res;
+  lsSet(LS_MONTHS, months);
+  pushMonth(res);
+  return true;
+}
+
+async function loadFiles(files) {
+  const msgs = []; let ok = 0;
+  for (const f of files) {
+    if (!/\.pdf$/i.test(f.name)) continue;
+    try { const res = await parsePdf(await f.arrayBuffer(), f.name); storeParsed(res); ok++; }
+    catch (e) { msgs.push(e.message || String(e)); }
+  }
+  setMsg(msgs.length ? msgs.join(" · ") : `${ok} PDF${ok === 1 ? "" : "s"} eingelesen.`, msgs.length > 0);
+  render();
+}
+
+/* ---------- Google Drive ---------- */
+const DRIVE_SERVER = "Google Drive", DRIVE_FOLDER = "1A4A5YPLPyUZ3wXh9JIAy-5UTTqjw4xWj";
+let driveBusy = false;
+function driveErr(e) {
+  switch (e && e.code) {
+    case "needs_reauth": return "Google Drive muss in claude.ai unter Einstellungen → Konnektoren neu verbunden werden.";
+    case "server_not_connected": return "Google Drive ist nicht verbunden. In claude.ai unter Einstellungen → Konnektoren hinzufügen.";
+    case "selection_required": return "Es gibt mehrere Google-Drive-Konnektoren – bitte einen auswählen.";
+    case "approval_required": case "not_in_manifest": case "consent_required": return "Der Zugriff auf Google Drive wurde nicht erlaubt. „Aus Google Drive aktualisieren“ antippen und erlauben.";
+    case "blocked_by_policy": return "Google Drive ist durch eine Organisationsrichtlinie gesperrt.";
+    case "not_granted": case "capability_disabled": case "capability_removed": return "Google Drive ist in dieser Ansicht nicht verfügbar. PDFs bitte über „PDFs hinzufügen“ laden.";
+    default: return "Google Drive: " + ((e && e.message) || e);
+  }
+}
+function findBase64(v, depth = 0) {
+  if (v == null || depth > 6) return null;
+  if (typeof v === "string") { const t = v.replace(/\s+/g, ""); return t.length > 1000 && /^[A-Za-z0-9+/_-]+=*$/.test(t) ? t : null; }
+  if (typeof v === "object") for (const k of Object.keys(v)) { const r = findBase64(v[k], depth + 1); if (r) return r; }
+  return null;
+}
+function b64ToBytes(b64) {
+  const bin = atob(b64.replace(/-/g, "+").replace(/_/g, "/"));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function driveSync(manual) {
+  if (!hasClaude) { if (manual) setMsg("Google Drive ist hier nicht verfügbar. PDFs bitte über „PDFs hinzufügen“ laden.", true); return; }
+  if (driveBusy) return;
+  driveBusy = true; lastDrive = Date.now();
+  const btn = document.getElementById("btnDrive"); btn.disabled = true;
+  try {
+    if (!pdfOk) throw { code: "x", message: "Die PDF-Bibliothek konnte nicht geladen werden." };
+    const mcp = await claude.use("mcp");
+    if (!mcp) { if (manual) setMsg("Google Drive ist in dieser Ansicht nicht verfügbar. PDFs bitte über „PDFs hinzufügen“ laden.", true); return; }
+    let files = [], token;
+    for (let p = 0; p < 5; p++) {
+      const res = await mcp.callTool(DRIVE_SERVER, "search_files",
+        { query: `mimeType = 'application/pdf' and parentId = '${DRIVE_FOLDER}'`, excludeContentSnippets: true, pageSize: 100, ...(token ? { pageToken: token } : {}) }, { cache: false });
+      const pl = res.payload && typeof res.payload === "object" ? res.payload : {};
+      files.push(...(pl.files || [])); token = pl.nextPageToken; if (!token) break;
+    }
+    const wanted = files.filter(f => /^\d{6}\.pdf$/i.test(f.title || f.name || ""));
+    if (!wanted.length) { setMsg("Im Google-Drive-Ordner wurden keine Zeitnachweise (z. B. 202611.pdf) gefunden.", true); return; }
+    let n = 0; const errs = [];
+    for (const f of wanted) {
+      const title = f.title || f.name, key = title.slice(0, 4) + "-" + title.slice(4, 6);
+      if (months[key] && months[key].meta.driveMod === f.modifiedTime) continue;
+      setMsg(`Lade ${title} aus Google Drive …`);
+      try {
+        const r = await mcp.callTool(DRIVE_SERVER, "download_file_content", { fileId: f.id }, { cache: false });
+        const b64 = findBase64(r.payload) || findBase64(r.structuredContent) || findBase64(r.content);
+        if (!b64) throw new Error("keine Dateidaten in der Antwort");
+        const bytes = b64ToBytes(b64);
+        if (String.fromCharCode(...bytes.slice(0, 4)) !== "%PDF") throw new Error("Antwort ist kein PDF");
+        const parsed = await parsePdf(bytes.buffer, title);
+        parsed.meta.driveMod = f.modifiedTime;
+        storeParsed(parsed); n++; render();
+      } catch (e) { if (e && e.code && e.code !== "tool_error") throw e; errs.push(`${title}: ${(e && e.message) || e}`); }
+    }
+    const t = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+    setMsg(errs.length ? `Google Drive (${t}): ${errs.join(" · ")}` : `Google Drive um ${t} geprüft: ${n ? n + " Monat" + (n === 1 ? "" : "e") + " aktualisiert" : "alles aktuell"}.`, errs.length > 0);
+  } catch (e) { setMsg(driveErr(e), true); }
+  finally { driveBusy = false; btn.disabled = false; render(); }
+}
+
+/* ---------- Ordnerzugriff (Chrome / Edge) ---------- */
+const canPickDir = false;
+async function scanDir(handle) {
+  const files = [];
+  for await (const entry of handle.values()) if (entry.kind === "file" && /\.pdf$/i.test(entry.name)) files.push(await entry.getFile());
+  files.sort((a, b) => a.name.localeCompare(b.name));
+  await loadFiles(files);
+}
+async function connectFolder() {
+  try {
+    const h = await window.showDirectoryPicker({ id: "arbeitszeit", mode: "read" });
+    await idbSet("dir", h);
+    document.getElementById("btnRescan").classList.remove("hidden");
+    await scanDir(h);
+  } catch (e) { if (e.name !== "AbortError") setMsg("Ordner konnte nicht geöffnet werden: " + e.message, true); }
+}
+async function rescan(interactive) {
+  const h = await idbGet("dir");
+  if (!h) { if (interactive) connectFolder(); return; }
+  try {
+    let perm = await h.queryPermission({ mode: "read" });
+    if (perm !== "granted" && interactive) perm = await h.requestPermission({ mode: "read" });
+    if (perm === "granted") await scanDir(h);
+    else if (!interactive) setMsg(`Ordner „${h.name}“ ist verbunden – „Ordner neu einlesen“ klicken, um aktuelle PDFs zu laden.`);
+  } catch (e) { setMsg("Ordner konnte nicht gelesen werden: " + e.message, true); }
+}
+
+/* ---------- Berechnung ---------- */
+function dayCalc(d) {
+  let offMin = 0, homeMin = 0, mixed = false;
+  for (const s of d.segs) {
+    if (!s.k || !s.g) continue;
+    let dur = toMin(s.g) - toMin(s.k); if (dur < 0) dur += 1440;
+    if (s.kF !== s.gF) mixed = true;
+    // Home nur, wenn Kommen UND Gehen mit „E“ gebucht – sonst (auch gemischt) zählt es als Office
+    if (s.kF === "E" && s.gF === "E") homeMin += dur; else offMin += dur;
+  }
+  const tot = offMin + homeMin;
+  const office = tot > 0 ? d.arbeits * offMin / tot : 0;
+  // Abwesenheit (Krankheit, Urlaub, Gleittag, „Tag nicht belegt“ …): Sollzeit vorhanden, aber nichts gearbeitet
+  const absent = d.soll > 0 && d.arbeits === 0 && !!d.note;
+  return { ...d, office, home: d.arbeits - office, mixed, absent, sollEff: absent ? 0 : d.soll };
+}
+
+function model() {
+  const keys = Object.keys(months).sort();
+  if (!keys.length) return null;
+  const dayMap = {};
+  let dataEnd = null, irtaz = 7;
+  for (const k of keys) {
+    const mo = months[k];
+    const end = mo.meta.validUntil || mo.meta.to;
+    for (const d of mo.days) if (d.date <= end) dayMap[d.date] = dayCalc(d);
+    if (!dataEnd || end > dataEnd) dataEnd = end;
+    irtaz = mo.meta.irtaz || irtaz;
+  }
+  const pct = Math.max(0, Math.min(100, +settings.pct || 0)) / 100;
+
+  function stats(from, to) {
+    let soll = 0, absent = 0, ist = 0, office = 0, home = 0, futSoll = 0, futDays = 0, missing = 0, workedDays = 0, pauseSum = 0;
+    for (let dt = D(from); iso(dt) <= to; dt = addDays(dt, 1)) {
+      const k = iso(dt), d = dayMap[k];
+      if (d) { soll += d.sollEff; absent += d.soll - d.sollEff; ist += d.arbeits; office += d.office; home += d.home; if (d.arbeits > 0) { workedDays++; pauseSum += d.pause || 0; } }
+      else if (!isWorkday(dt)) continue;
+      else if (k > dataEnd) { futSoll += irtaz; futDays++; }
+      else missing++;
+    }
+    const basisSoFar = settings.basis === "ist" ? ist : soll;
+    const targetSoFar = pct * basisSoFar;
+    const target = pct * (basisSoFar + futSoll);
+    return { from, to, soll, absent, ist, office, workedDays, pauseSum, home, futSoll, futDays, missing, targetSoFar, target,
+             needed: Math.max(0, target - office), diff: office - targetSoFar, done: futDays === 0 };
+  }
+
+  const firstDate = Object.keys(dayMap).sort()[0];
+  const weeks = [];
+  for (let mon = mondayOf(D(firstDate)); iso(mon) <= dataEnd; mon = addDays(mon, 7)) {
+    const s = stats(iso(mon), iso(addDays(mon, 6)));
+    s.kw = isoWeek(mon);
+    weeks.push(s);
+  }
+  const monthStats = keys.map(k => {
+    const [y, m] = k.split("-").map(Number);
+    const last = iso(new Date(Date.UTC(y, m, 0)));
+    const s = stats(`${k}-01`, last);
+    s.label = `${MONTHS[m - 1]} ${y}`; s.key = k;
+    return s;
+  });
+  const days = Object.values(dayMap).sort((a, b) => a.date < b.date ? -1 : 1);
+  return { dataEnd, irtaz, pct, weeks, monthStats, days, keys, stats };
+}
+
+/* ---------- Darstellung ---------- */
+function setMsg(t, err) { const m = document.getElementById("msg"); m.textContent = t || ""; m.className = err ? "err" : ""; }
+
+function statusOf(s) {
+  if (s.done) return s.office + 0.005 >= s.target
+    ? `<span class="status ok">Ziel erreicht (${fmtSigned(s.office - s.target)})</span>`
+    : `<span class="status bad">Ziel verfehlt (${fmtSigned(s.office - s.target)})</span>`;
+  if (s.needed <= 0.005) return `<span class="status ok">Ziel bereits erreicht</span>`;
+  if (s.futDays && s.needed / s.futDays > 7.5) return `<span class="status bad">Kaum noch erreichbar</span>`;
+  return s.diff >= -0.005
+    ? `<span class="status ok">Im Plan (${fmtSigned(s.diff)})</span>`
+    : `<span class="status warn">Rückstand (${fmtSigned(s.diff)})</span>`;
+}
+
+function card(title, sub, s, extra = "") {
+  const p = s.target > 0 ? Math.min(100, s.office / s.target * 100) : 100;
+  const paceMark = s.target > 0 && !s.done ? `<i style="left:${Math.min(100, s.targetSoFar / s.target * 100)}%"></i>` : "";
+  const perDay = s.futDays > 0 && s.needed > 0 ? (() => {
+    const a = s.needed / s.futDays, t = a + PAUSE;
+    return `<span>Zu verbringende Zeit gesamt (inkl. Pausen)</span><span>${fmtH(s.needed + PAUSE * s.futDays)}</span>
+      <span>pro Arbeitstag: Arbeitszeit im Office</span><span>${fmtH(a)} (${fmtHM(a)})</span>
+      <span>pro Arbeitstag: zu verbringende Zeit (inkl. 45 min Pause)</span><span><b>${fmtH(t)}</b> (${fmtHM(t)})</span>`;
+  })() : "";
+  return `<div class="card">
+    <div class="label">${title}</div>
+    <div class="sub">${sub}</div>
+    <div class="big">${fmt(s.office)} <small>/ ${fmtH(s.target)} im Office</small></div>
+    <div class="bar"><span style="width:${p}%"></span>${paceMark}</div>
+    ${statusOf(s)}
+    <div class="kv">
+      <span>Fehlende Office-Arbeitszeit</span><span><b>${fmtH(s.needed)}</b></span>
+      ${perDay}
+      ${s.futDays ? `<span>verbleibende Arbeitstage</span><span>${s.futDays}</span>` : ""}
+      <span>gearbeitet gesamt</span><span>${fmtH(s.ist)}</span>
+      <span>davon Homeoffice</span><span>${fmtH(s.home)}</span>
+      <span>Office-Anteil</span><span>${s.ist > 0 ? fmt(s.office / s.ist * 100, 0) : 0} %</span>
+      ${s.absent ? `<span>Abwesenheit (nicht im Ziel)</span><span>${fmtH(s.absent)}</span>` : ""}
+      ${s.missing ? `<span>Arbeitstage ohne PDF-Daten</span><span>${s.missing}</span>` : ""}
+      ${extra}
+    </div>
+  </div>`;
+}
+
+function monthExtra(s, m) {
+  const { work, absent, worked, hol } = monthFacts(s, m);
+  const sollTotal = s.soll + s.futSoll, anw = sollTotal + PAUSE * (work - absent);
+  return `<span class="hd">Arbeitstage ${s.label}</span>
+    <span>Arbeitstage im Monat (Mo–Fr ohne Feiertage BW)</span><span><b>${work}</b></span>
+    <span>davon gearbeitet bis ${deDate(m.dataEnd)}</span><span>${worked}</span>
+    ${absent ? `<span>davon Abwesenheit (Krank/Urlaub …)</span><span>${absent}</span>` : ""}
+    <span>verbleibend</span><span>${s.futDays}</span>
+    <span>Feiertage Baden-Württemberg</span><span>${hol.length ? esc(hol.join(", ")) : "keine"}</span>
+    <span class="hd">Voraussichtlich bis Monatsende</span>
+    <span>Sollarbeitszeit (${work - absent} Tage × ${fmt(m.irtaz)} h)</span><span>${fmtH(sollTotal)}</span>
+    <span>davon Office-Ziel (${fmt(m.pct * 100, 0)} %)</span><span>${fmtH(s.target)}</span>
+    <span>Anwesenheit inkl. 45 min Pause pro Tag</span><span>${fmtH(anw)}</span>
+    <span>Gearbeitet bei Sollerfüllung (Stand + Rest)</span><span>${fmtH(s.ist + s.futSoll)}</span>`;
+}
+
+/* ---------- KPI und Diagramme ---------- */
+const absKind = d => /arbeitsunf|krank/i.test(d.note) ? "krank" : /urlaub/i.test(d.note) ? "urlaub" : "sonst";
+let chartTab = "tage";
+const openDetails = new Set();
+const detailOpen = (k, title) => `<details data-k="${k}"${openDetails.has(k) ? " open" : ""}><summary>${title}</summary>`;
+const kpi = (label, value, sub = "", tone = "") => `<div class="kpi"><div class="kl">${label}</div><div class="kn${tone ? " t-" + tone : ""}">${value}</div>${sub ? `<div class="ks">${sub}</div>` : ""}</div>`;
+const nTage = (h, m) => fmt(h / m.irtaz, 1);
+const toneOf = s => s.done ? (s.office + 0.005 >= s.target ? "pos" : "neg") : (s.diff >= -0.005 ? "pos" : "warn");
+
+function monthFacts(s, m) {
+  const y = +s.key.slice(0, 4), hol = [];
+  let work = 0, absent = 0;
+  for (let dt = D(s.from); iso(dt) <= s.to; dt = addDays(dt, 1)) {
+    const k = iso(dt), hn = holidaysBW(y).get(k);
+    if (hn) hol.push(`${deShort(k)} ${hn}${dow(dt) >= 5 ? " (fällt aufs Wochenende)" : ""}`);
+    if (!isWorkday(dt)) continue;
+    work++;
+    const d = m.days.find(x => x.date === k);
+    if (d && d.absent) absent++;
+  }
+  return { work, absent, worked: work - absent - s.futDays, hol };
+}
+
+function closedInfo(m, curM) {
+  const done = m.monthStats.filter(s => s.done);
+  let yy = curM.key.slice(0, 4);
+  if (!done.some(s => s.key.startsWith(yy))) { const ys = [...new Set(done.map(s => s.key.slice(0, 4)))].sort(); yy = ys[ys.length - 1]; }
+  const past = done.filter(s => s.key.startsWith(yy));
+  if (!past.length) return null;
+  const sum = f => past.reduce((a, s) => a + s[f], 0);
+  const office = sum("office"), target = sum("target");
+  return { yy, office, target, needed: Math.max(0, target - office), names: past.map(s => MONTHS[+s.key.slice(5) - 1].slice(0, 3)).join(", ") };
+}
+
+function closedKpis(m, curM) {
+  const ci = closedInfo(m, curM);
+  if (!ci) return "";
+  const { yy, names, office, target, needed } = ci, d = needed / m.irtaz;
+  return `<div class="gh">Abgeschlossene Monate ${yy} <span class="sub">${names}</span></div><div class="kpis">
+    ${kpi("Fehlende Arbeitsstunden", needed > 0.005 ? `${fmt(needed)} h` : "keine", `Office ${fmt(office)} von ${fmt(target)} h Ziel`, needed > 0.005 ? "neg" : "pos")}
+    ${kpi("Entspricht Arbeitstagen", fmt(d, 1), `bei ${fmt(m.irtaz, 0)} h pro Tag`)}
+    ${kpi("Stunden mit Pause", `${fmt(needed + PAUSE * d)} h`, `inkl. ${fmt(PAUSE * d)} h Pause (45 min pro Tag)`)}
+  </div>`;
+}
+
+function monthSoFarKpis(s, m) {
+  const miss = Math.max(0, s.targetSoFar - s.office), d = miss / m.irtaz, lead = s.office - s.targetSoFar;
+  return `<div class="gh">${s.label} bis ${deDate(m.dataEnd)} <span class="sub">letzter Tag im PDF</span></div><div class="kpis">
+    ${kpi("Fehlende Arbeitsstunden", miss > 0.005 ? `${fmt(miss)} h` : "keine", `Office ${fmt(s.office)} von ${fmt(s.targetSoFar)} h Ziel bis hier${lead > 0.005 ? " · Vorsprung " + fmt(lead) + " h" : ""}`, miss > 0.005 ? "warn" : "pos")}
+    ${kpi("Entspricht Arbeitstagen", fmt(d, 1), `bei ${fmt(m.irtaz, 0)} h pro Tag`)}
+    ${kpi("Stunden mit Pause", `${fmt(miss + PAUSE * d)} h`, `inkl. ${fmt(PAUSE * d)} h Pause (45 min pro Tag)`)}
+  </div>`;
+}
+
+function monthRemainKpis(s, m) {
+  const n = s.futDays;
+  if (n === 0) return "";
+  const f = monthFacts(s, m);
+  const perDay = s.needed > 0.005 ? s.needed / n : 0, d = s.needed / m.irtaz;
+  const anw = s.soll + s.futSoll + PAUSE * (f.work - f.absent);
+  return `<div class="gh">Verbleibende Tage <span class="sub">${n} von ${f.work} Arbeitstagen · ${deShort((() => { let t = addDays(D(m.dataEnd), 1); while (!isWorkday(t)) t = addDays(t, 1); return iso(t); })())} – ${deShort(s.to)}</span></div><div class="kpis">
+    ${kpi("Fehlende Arbeitsstunden", s.needed > 0.005 ? `${fmt(s.needed)} h` : "erreicht", `bis Monatsziel ${fmt(s.target)} h (inkl. Rückstand)`, s.needed > 0.005 ? "" : "pos")}
+    ${kpi("Entspricht Arbeitstagen", fmt(d, 1), perDay ? `verteilt auf ${n} Tage = ${fmt(perDay)} h pro Tag` : "")}
+    ${kpi("Stunden mit Pause", `${fmt(s.needed + PAUSE * n)} h`, `inkl. ${fmt(PAUSE * n)} h Pause an ${n} Tagen`)}
+    ${kpi("Pro Tag zu verbringen", perDay ? `${fmt(perDay + PAUSE)} h` : "–", perDay ? `${fmtHM(perDay + PAUSE)} = ${fmt(perDay)} h Office + 45 min Pause` : "")}
+    ${kpi("Arbeitstage im Monat", `${f.work}`, `${f.worked} gearbeitet${f.absent ? " · " + f.absent + " abwesend" : ""} · ${n} offen`)}
+    ${kpi("Prognose Monat", `${fmt(anw)} h`, `Anwesenheit inkl. Pause · Soll ${fmt(s.soll + s.futSoll)} h`)}
+  </div><div class="sub" style="margin-top:6px">Feiertage Baden-Württemberg: ${f.hol.length ? esc(f.hol.join(", ")) : "keine"}</div>`;
+}
+
+function carryKpis(s, m) {
+  const ci = closedInfo(m, s), n = s.futDays;
+  if (!ci || ci.needed <= 0.005 || n === 0) return "";
+  const mon = MONTHS[+s.key.slice(5) - 1], next = MONTHS[+s.key.slice(5) % 12];
+  const cap = n * m.irtaz, own = s.needed, room = Math.max(0, cap - own);
+  const now = Math.min(ci.needed, room), carry = ci.needed - now, ok = carry <= 0.005;
+  const total = own + ci.needed, perDay = total / n;
+  const verdict = ok
+    ? `Ergebnis: Der Rückstand aus ${ci.names} lässt sich im ${mon} aufholen, wenn du an allen ${n} verbleibenden Tagen ${fmt(perDay)} h im Office arbeitest.`
+    : own > cap + 0.005
+      ? `Ergebnis: Schon das Monatsziel ist mit den ${n} verbleibenden Tagen nicht ganz erreichbar. Der ganze Rückstand von ${fmt(ci.needed)} h muss im ${next} erledigt werden.`
+      : `Ergebnis: Im ${mon} lassen sich ${fmt(now)} h des Rückstands aufholen, ${fmt(carry)} h müssen im ${next} erledigt werden.`;
+  return `<div class="gh">Rückstand nachholen <span class="sub">${ci.names} im ${mon} oder erst im ${next}</span></div><div class="kpis">
+    ${kpi("Rückstand Vormonate", `${fmt(ci.needed)} h`, `${ci.names} · ${fmt(ci.needed / m.irtaz, 1)} Arbeitstage`, "neg")}
+    ${kpi("Bedarf pro Tag gesamt", `${fmt(perDay + PAUSE)} h`, `${fmtHM(perDay + PAUSE)} = ${fmt(perDay)} h Office + 45 min Pause · Monatsziel ${fmt(own)} h + Rückstand = ${fmt(total)} h an ${n} Tagen`, perDay > m.irtaz + 0.005 ? "neg" : "pos")}
+    ${kpi(`Im ${mon} nachholbar`, `${fmt(now)} h`, `${n} Tage × ${fmt(m.irtaz, 0)} h = ${fmt(cap)} h Office möglich, minus ${fmt(own)} h Monatsziel`, ok ? "pos" : "warn")}
+    ${kpi(`Bleibt für ${next}`, ok ? "nichts" : `${fmt(carry)} h`, ok ? "" : `${fmt(carry / m.irtaz, 1)} Arbeitstage · mit Pause ${fmt(carry + PAUSE * carry / m.irtaz)} h`, ok ? "pos" : "neg")}
+  </div><div class="sub" style="margin-top:6px">${verdict} Annahme: höchstens ${fmt(m.irtaz, 0)} h Office-Arbeitszeit pro Tag.</div>`;
+}
+
+function niceMax(v) {
+  if (!(v > 0)) return 10;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+function frame(n, step, yMax) {
+  const padL = 32, padR = 6, padT = 16, padB = 22, H = 180;
+  const W = Math.max(340, padL + padR + n * step), plotH = H - padT - padB;
+  const y = v => padT + plotH * (1 - v / yMax);
+  const cx = i => padL + step * (i + 0.5);
+  let g = "";
+  for (let k = 0; k <= 2; k++) {
+    const v = yMax * k / 2;
+    g += `<line class="c-g" x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}"/><text class="c-t" x="${padL - 4}" y="${y(v) + 3}" text-anchor="end">${fmt(v, 0)}</text>`;
+  }
+  return { W, H, y, cx, g, padL, padR };
+}
+function chartPeriods(list, labelFn, step) {
+  const yMax = niceMax(Math.max(...list.map(s => Math.max(s.office, s.target)), 1) * 1.15);
+  const f = frame(list.length, step, yMax), bw = step * 0.56, base = f.y(0);
+  let g = f.g;
+  list.forEach((s, i) => {
+    const x = f.cx(i), top = f.y(s.office);
+    g += `<rect class="c-o${s.done ? "" : " c-part"}" x="${x - bw / 2}" y="${top}" width="${bw}" height="${Math.max(0, base - top)}" rx="2"/>`;
+    g += `<line class="c-tl" x1="${x - bw * 0.8}" x2="${x + bw * 0.8}" y1="${f.y(s.target)}" y2="${f.y(s.target)}"/>`;
+    g += `<text class="c-v" x="${x}" y="${top - 3}" text-anchor="middle">${fmt(s.office, 0)}</text>`;
+    g += `<text class="c-t" x="${x}" y="${f.H - 7}" text-anchor="middle">${labelFn(s)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${f.W} ${f.H}" role="img">${g}</svg>`;
+}
+function chartDays(s, m) {
+  const items = [];
+  for (let dt = D(s.from); iso(dt) <= s.to; dt = addDays(dt, 1)) {
+    if (!isWorkday(dt)) continue;
+    const k = iso(dt);
+    items.push({ day: dt.getUTCDate(), d: m.days.find(x => x.date === k), future: k > m.dataEnd });
+  }
+  const need = s.futDays > 0 ? s.needed / s.futDays : 0;
+  const stack = i => i.d && !i.d.absent ? i.d.office + i.d.home : 0;
+  const yMax = niceMax(Math.max(...items.map(stack), need, 1) * 1.15);
+  const f = frame(items.length, 15, yMax), bw = 10.5, base = f.y(0);
+  let g = f.g;
+  items.forEach((i, n) => {
+    const x = f.cx(n);
+    if (i.d && i.d.absent) g += `<text class="c-v" x="${x}" y="${base - 4}" text-anchor="middle">${{ krank: "K", urlaub: "U", sonst: "•" }[absKind(i.d)]}</text>`;
+    else if (i.d && i.d.arbeits > 0) {
+      const o = i.d.office, h = i.d.home;
+      g += `<rect class="c-o" x="${x - bw / 2}" y="${f.y(o)}" width="${bw}" height="${Math.max(0, base - f.y(o))}"/>`;
+      g += `<rect class="c-h" x="${x - bw / 2}" y="${f.y(o + h)}" width="${bw}" height="${Math.max(0, f.y(o) - f.y(o + h))}"/>`;
+    } else if (i.future && need > 0.005) g += `<rect class="c-f" x="${x - bw / 2}" y="${f.y(need)}" width="${bw}" height="${Math.max(0, base - f.y(need))}" rx="2"/>`;
+    g += `<text class="c-t" x="${x}" y="${f.H - 7}" text-anchor="middle">${i.day}</text>`;
+  });
+  return `<svg viewBox="0 0 ${f.W} ${f.H}" role="img">${g}</svg>`;
+}
+function chartsBlock(m, curM, curW) {
+  const tabs = [["tage", "Tage"], ["wochen", "Wochen"], ["monate", "Monate"]];
+  let svg, title, legend;
+  const lg = (c, t) => `<span class="lg ${c}"></span>${t}`;
+  if (chartTab === "wochen") {
+    svg = chartPeriods(m.weeks.slice(-12), w => "KW" + w.kw, 28);
+    title = "Wochen · Office-Stunden (letzte 12)";
+    legend = lg("o", "Office") + lg("t", "Ziel");
+  } else if (chartTab === "monate") {
+    svg = chartPeriods(m.monthStats.slice(-12), s => MONTHS[+s.key.slice(5) - 1].slice(0, 3), 44);
+    title = "Monate · Office-Stunden";
+    legend = lg("o", "Office (hell: laufender Monat)") + lg("t", "Ziel");
+  } else {
+    svg = chartDays(curM, m);
+    const need = curM.futDays > 0 && curM.needed > 0.005 ? curM.needed / curM.futDays : 0;
+    title = `${curM.label} · Stunden pro Arbeitstag`;
+    legend = lg("o", "Office") + lg("h", "Home") + (need ? lg("f", `nötig: ${fmt(need)} h Office/Tag`) : "") + " K = Krank, U = Urlaub";
+  }
+  return `<div class="chartbox"><div class="seg">${tabs.map(([k, t]) => `<button data-tab="${k}" class="${chartTab === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    <div class="gh" style="margin:8px 0 2px">${title}</div><div class="chart">${svg}</div><div class="legend">${legend}</div></div>`;
+}
+
+function mini(s) {
+  const p = s.target > 0 ? Math.min(100, s.office / s.target * 100) : 100;
+  return `<span class="mini"><span style="width:${p}%"></span></span>`;
+}
+
+function render() {
+  const el = document.getElementById("content");
+  const m = model();
+  if (!m) {
+    document.getElementById("dataInfo").textContent = `${syncState} · Noch keine Zeitnachweise geladen.`;
+    el.innerHTML = `<div class="empty">Lade die monatlichen Zeitnachweis-PDFs (z. B. <code>202611.pdf</code>), um deine Office-Quote zu sehen.</div>`;
+    return;
+  }
+  m.weeks.forEach(w => w.dataEnd = m.dataEnd);
+  m.monthStats.forEach(s => s.dataEnd = m.dataEnd);
+  document.getElementById("dataInfo").textContent =
+    `${syncState} · ${m.keys.length} Monat${m.keys.length === 1 ? "" : "e"} geladen · Daten bis ${deDate(m.dataEnd)} · Ziel ${fmt(m.pct * 100, 0)} % der ${settings.basis === "ist" ? "gearbeiteten Stunden" : "Sollzeit"} im Office`;
+
+  const curW = m.weeks.find(w => w.from <= m.dataEnd && m.dataEnd <= w.to) || m.weeks[m.weeks.length - 1];
+  const curM = m.monthStats.find(s => s.from <= m.dataEnd && m.dataEnd <= s.to) || m.monthStats[m.monthStats.length - 1];
+
+  // Ist die Woche mit dem Datenende schon vorbei, zusätzlich die nächste Woche zeigen
+  let nextCard = "", nw = null;
+  if (curW.done) {
+    const mon = addDays(D(curW.from), 7);
+    nw = m.stats(iso(mon), iso(addDays(mon, 6)));
+    nw.kw = isoWeek(mon); nw.dataEnd = m.dataEnd;
+    nextCard = card(`Nächste Woche · KW ${nw.kw}`, `${deDate(nw.from)} – ${deDate(nw.to)}`, nw);
+  }
+
+  const cardsHtml = `<div class="cards">
+    ${card(`Aktuelle Woche · KW ${curW.kw}`, `${deDate(curW.from)} – ${deDate(curW.to)}`, curW)}
+    ${nextCard}
+    ${card(`Aktueller Monat · ${curM.label}`, curM.done ? "abgeschlossen" : `Daten bis ${deDate(m.dataEnd)}, Rest hochgerechnet mit ${fmt(m.irtaz)} h/Arbeitstag`, curM, monthExtra(curM, m))}
+  </div>`;
+  let html = closedKpis(m, curM) + monthSoFarKpis(curM, m) + monthRemainKpis(curM, m) + carryKpis(curM, m) + chartsBlock(m, curM, curW)
+    + detailOpen("cards", "Details Woche und Monat") + cardsHtml + "</details>";
+
+  const monthRow = (s, label, cls) => `<tr class="${cls}">
+      <td>${label}</td><td>${fmt(s.soll + s.futSoll)}</td><td>${fmt(s.ist)}</td><td><b>${fmt(s.office)}</b></td><td>${fmt(s.home)}</td>
+      <td>${s.ist > 0 ? fmt(s.office / s.ist * 100, 0) : 0} %</td><td>${fmt(s.target)}</td>
+      <td class="${s.office - s.target >= 0 ? "pos" : "neg"}">${fmtSigned(s.office - s.target)}</td>
+      <td>${s.needed > 0.005 ? fmt(s.needed) : "–"}</td><td class="l">${mini(s)}</td></tr>`;
+  const years = [...new Set(m.monthStats.map(s => s.key.slice(0, 4)))].sort().reverse();
+  for (const y of years) {
+    const ms = m.monthStats.filter(s => s.key.startsWith(y));
+    const past = ms.filter(s => s.done);            // Summe nur über abgeschlossene Monate
+    const sum = ["soll", "futSoll", "ist", "office", "home", "target"].reduce((o, f) => (o[f] = past.reduce((a, s) => a + s[f], 0), o), {});
+    sum.needed = Math.max(0, sum.target - sum.office);
+    html += detailOpen(`mt${y}`, `Tabelle Monate ${y}`) + `<div class="tablewrap"><table>
+    <tr><th class="l">Monat</th><th>Soll o. Abw.</th><th>Gearbeitet</th><th>Office</th><th>Home</th><th>Office-Anteil</th><th>Ziel Office</th><th>Differenz</th><th>Fehlende Office-Arbeitszeit</th><th class="l">Fortschritt</th></tr>
+    ${ms.map(s => monthRow(s, `${MONTHS[+s.key.slice(5) - 1]}${s.done ? "" : " *"}`, s === curM ? "current" : "")).join("")}
+    ${past.length ? monthRow(sum, `Summe ${y} (${past.length} abgeschl. Monat${past.length === 1 ? "" : "e"})`, "sum") : ""}
+  </table></div></details>`;
+  }
+  html += `
+  <div class="legend">* laufender Monat: nicht in der Summe. Sollzeit und Ziel enthalten die restlichen Arbeitstage (ohne Feiertage in Baden-Württemberg). Die Summe zählt nur abgeschlossene Monate.</div>`;
+
+  // Abwesenheiten – nur Statistik
+  const absKind = d => /arbeitsunf|krank/i.test(d.note) ? "krank" : /urlaub/i.test(d.note) ? "urlaub" : "sonst";
+  const latest = m.keys.slice().reverse().map(k => months[k].meta.urlaub).find(Boolean);
+  for (const y of years) {
+    const rows = m.keys.filter(k => k.startsWith(y)).map(k => {
+      const c = { krank: 0, urlaub: 0, sonst: 0, notes: new Set() };
+      m.days.filter(d => d.date.startsWith(k) && d.absent).forEach(d => { const t = absKind(d); c[t]++; if (t === "sonst") c.notes.add(d.note); });
+      return { k, ...c };
+    });
+    const tot = rows.reduce((a, r) => ({ krank: a.krank + r.krank, urlaub: a.urlaub + r.urlaub, sonst: a.sonst + r.sonst }), { krank: 0, urlaub: 0, sonst: 0 });
+    const cell = n => n ? `${n}` : "–";
+    html += detailOpen(`ab${y}`, `Abwesenheiten ${y}`) + `
+    ${y === years[0] && latest ? `<div class="sub" style="margin-bottom:8px">Urlaubskonto laut PDF: Anspruch <b>${fmt(latest.anspruch, 0)}</b> · genommen <b>${fmt(latest.verbrauch, 0)}</b> · Rest <b>${fmt(latest.rest, 0)}</b> · davon verplant <b>${fmt(latest.verplant, 0)}</b> Tage (abtragbar bis ${latest.bis})</div>` : ""}
+    <div class="tablewrap"><table>
+      <tr><th class="l">Monat</th><th>Krank (Tage)</th><th>Urlaub (Tage)</th><th>Sonstige (Tage)</th><th class="l">Sonstige – Art</th></tr>
+      ${rows.map(r => `<tr><td>${MONTHS[+r.k.slice(5) - 1]}</td><td>${cell(r.krank)}</td><td>${cell(r.urlaub)}</td><td>${cell(r.sonst)}</td><td class="l sub">${esc([...r.notes].join(", "))}</td></tr>`).join("")}
+      <tr class="sum"><td>Summe ${y}</td><td>${tot.krank}</td><td>${tot.urlaub}</td><td>${tot.sonst}</td><td></td></tr>
+    </table></div></details>`;
+  }
+
+  html += detailOpen("wk", "Tabelle Wochen") + `<div class="tablewrap"><table>
+    <tr><th class="l">KW</th><th class="l">Zeitraum</th><th>Soll o. Abw.</th><th>Gearbeitet</th><th>Office</th><th>Home</th><th>Office-Anteil</th><th>Ziel Office</th><th>Differenz</th><th>Fehlende Office-Arbeitszeit</th><th class="l">Fortschritt</th></tr>
+    ${m.weeks.slice().reverse().map(s => `<tr class="${s === curW ? "current" : ""}">
+      <td>KW ${s.kw}</td><td class="l">${deShort(s.from)} – ${deShort(s.to)}${s.missing ? ` <span class="sub" title="${s.missing} Arbeitstag(e) ohne PDF-Daten">(unvollst.)</span>` : ""}</td>
+      <td>${fmt(s.soll + s.futSoll)}</td><td>${fmt(s.ist)}</td><td><b>${fmt(s.office)}</b></td><td>${fmt(s.home)}</td>
+      <td>${s.ist > 0 ? fmt(s.office / s.ist * 100, 0) : 0} %</td><td>${fmt(s.target)}</td>
+      <td class="${s.office - s.target >= 0 ? "pos" : "neg"}">${fmtSigned(s.office - s.target)}</td>
+      <td>${s.needed > 0.005 ? fmt(s.needed) : "–"}</td><td class="l">${mini(s)}</td></tr>`).join("")}
+  </table></div></details>`;
+
+  for (const k of m.keys.slice().reverse()) {
+    const [y, mo] = k.split("-").map(Number);
+    const ds = m.days.filter(d => d.date.startsWith(k));
+    html += detailOpen(`tg${k}`, `Tage ${MONTHS[mo - 1]} ${y} <span class="sub">· ${esc(months[k].meta.fileName)}</span>`) + `
+    <div class="tablewrap"><table>
+      <tr><th class="l">Tag</th><th class="l">Buchungen</th><th class="l">Bemerkung</th><th>Sollzeit</th><th>Gearbeitet</th><th>Office</th><th>Home</th></tr>
+      ${ds.map(d => {
+        const dt = D(d.date);
+        const chips = d.segs.filter(s => s.k || s.g).map(s => {
+          const home = s.kF === "E" && s.gF === "E", mixed = s.kF !== s.gF;
+          return `<span class="chip ${home ? "h" : "o"}${mixed ? " m" : ""}" title="${mixed ? "Nur Kommen oder Gehen mit „E“ – zählt als Office" : ""}">${home ? "Home" : "Office"} ${s.k || "?"}–${s.g || "?"}</span>`;
+        }).join("");
+        const off = dow(dt) >= 5 || (!d.segs.length && d.soll === 0);
+        return `<tr${off ? ' style="color:var(--muted)"' : ""}><td>${WD[dow(dt)]} ${deShort(d.date)}</td><td class="l">${chips}</td><td class="l">${esc(d.note)}</td>
+          <td>${d.soll ? fmt(d.soll) : ""}</td><td>${d.arbeits ? fmt(d.arbeits) : ""}</td>
+          <td>${d.office ? `<b>${fmt(d.office)}</b>` : ""}</td><td>${d.home ? fmt(d.home) : ""}</td></tr>`;
+      }).join("")}
+    </table></div></details>`;
+  }
+  html += `<div class="legend">Home = Kommen und Gehen mit „E“ gebucht, alles andere zählt als Office. Bei Tagen mit Office- und Home-Anteil wird die Pause anteilig verteilt.
+    Gestrichelt umrandet: nur Kommen oder nur Gehen mit „E“ – zählt als Office. Alle Daten bleiben lokal in diesem Browser.</div>`;
+  el.innerHTML = html;
+}
+
+/* ---------- Ereignisse ---------- */
+const contentEl = document.getElementById("content");
+contentEl.addEventListener("toggle", e => { const k = e.target && e.target.dataset && e.target.dataset.k; if (!k) return; if (e.target.open) openDetails.add(k); else openDetails.delete(k); }, true);
+contentEl.addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) { chartTab = b.dataset.tab; render(); } });
+const pctEl = document.getElementById("pct"), basisEl = document.getElementById("basis");
+pctEl.value = settings.pct; basisEl.value = settings.basis;
+pctEl.addEventListener("input", () => { settings.pct = +pctEl.value; lsSet(LS_SETTINGS, settings); render(); });
+basisEl.addEventListener("change", () => { settings.basis = basisEl.value; lsSet(LS_SETTINGS, settings); render(); });
+document.getElementById("fileInput").addEventListener("change", e => { loadFiles([...e.target.files]); e.target.value = ""; });
+document.getElementById("btnDrive").addEventListener("click", () => driveSync(true));
+let clearArmed = null;
+document.getElementById("btnClear").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  if (!clearArmed) {                                   // 1. Klick: nachfragen (confirm() gibt es in der Seite nicht)
+    btn.textContent = "Wirklich alles löschen?";
+    clearArmed = setTimeout(() => { clearArmed = null; btn.textContent = "Zurücksetzen"; }, 5000);
+    return;
+  }
+  clearTimeout(clearArmed); clearArmed = null; btn.textContent = "Zurücksetzen";
+  const keys = Object.keys(months);
+  months = {}; lsSet(LS_MONTHS, months);
+  if (monthsCol) for (const k of keys) { try { await monthsCol.doc(k).delete(); } catch {} }
+  setMsg("Alle ausgewerteten Monate gelöscht."); render();
+});
+try { localStorage.removeItem("officeQuote.absences"); } catch {}
+const drop = document.getElementById("drop");
+["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (ev === "drop" || e.target === drop) drop.classList.remove("over"); }));
+document.addEventListener("drop", e => { const f = [...(e.dataTransfer?.files || [])]; if (f.length) loadFiles(f); });
+
+(() => {
+  render();
+  if (!pdfOk) setMsg("Die PDF-Bibliothek (pdf.js) konnte nicht geladen werden – neue PDFs können gerade nicht eingelesen werden. Gespeicherte Monate werden angezeigt.", true);
+  initSync();
+  if (hasClaude) {
+    syncReady.then(() => driveSync(false));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastDrive > 10 * 60 * 1000) driveSync(false); });
+  } else {
+    document.getElementById("btnDrive").hidden = true;
+    document.getElementById("drop").textContent = "PDFs (z. B. 202611.pdf) hierher ziehen oder „PDFs hinzufügen“ wählen. Ein neueres PDF desselben Monats ersetzt das alte. Die PDFs werden nur in diesem Browser ausgewertet und gespeichert.";
+  }
+})();
+</script>
+
+</body></html>
